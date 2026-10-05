@@ -46,8 +46,7 @@ public final class MirrorSession: NSObject {
 
   private lazy var broadcastPicker: RPSystemBroadcastPickerView = {
     let picker = RPSystemBroadcastPickerView(frame: CGRect(x: -200, y: -200, width: 44, height: 44))
-    picker.preferredExtension =
-      Bundle.main.object(forInfoDictionaryKey: "MirrorBroadcastExtensionBundleIdentifier") as? String
+    picker.preferredExtension = Self.broadcastExtensionIdentifier()
     picker.showsMicrophoneButton = false
     return picker
   }()
@@ -69,11 +68,7 @@ public final class MirrorSession: NSObject {
     receiver.onFrame = { [weak self] jpeg in
       self?.enqueueDecode(jpeg)
     }
-
-#if !targetEnvironment(simulator)
-    // No Simulador a extensão de transmissão não roda, e o caminho do App Group passa do
-    // limite de 104 bytes de um socket Unix; lá só o modo demonstração é usado.
-    receiver.start { [weak self] error in
+    receiver.start(settings: settings) { [weak self] error in
       DispatchQueue.main.async { self?.errorMessage = error ?? "" }
     }
 
@@ -86,7 +81,6 @@ public final class MirrorSession: NSObject {
         DispatchQueue.main.async { self?.errorMessage = error ?? "" }
       }
     }
-#endif
   }
 
   func carPlayDidConnect() {
@@ -134,10 +128,10 @@ public final class MirrorSession: NSObject {
     Self.findButton(in: picker)?.sendActions(for: .allEvents)
   }
 
-  /// Pede para a extensão encerrar a transmissão (via notificação Darwin).
+  /// Pede para a extensão encerrar a transmissão.
   @objc(stopBroadcast)
   public func stopBroadcast() {
-    DarwinNotificationCenter.post(MirrorShared.Notifications.stopBroadcast)
+    receiver.sendStop()
   }
 
   @objc(updateSettingsWithMaxFPS:jpegQuality:maxDimension:fillMode:)
@@ -151,7 +145,7 @@ public final class MirrorSession: NSObject {
     guard updated != settings else { return }
     settings = updated
     settings.save()
-    DarwinNotificationCenter.post(MirrorShared.Notifications.settingsChanged)
+    receiver.send(settings: updated)
     NotificationCenter.default.post(name: Self.settingsDidChangeNotification, object: self)
     renderer?.mirrorStateDidChange()
   }
@@ -291,6 +285,25 @@ public final class MirrorSession: NSObject {
       .filter { $0.session.role == .windowApplication }
       .flatMap { $0.windows }
     return windows.first { $0.isKeyWindow } ?? windows.first
+  }
+
+  /// Bundle ID da extensão embutida, lido em tempo de execução (ferramentas como o
+  /// Sideloadly podem trocar os bundle IDs ao reassinar o app).
+  private static func broadcastExtensionIdentifier() -> String? {
+    guard
+      let pluginsURL = Bundle.main.builtInPlugInsURL,
+      let items = try? FileManager.default.contentsOfDirectory(at: pluginsURL, includingPropertiesForKeys: nil)
+    else { return nil }
+
+    for item in items where item.pathExtension == "appex" {
+      guard
+        let bundle = Bundle(url: item),
+        let info = bundle.object(forInfoDictionaryKey: "NSExtension") as? [String: Any],
+        info["NSExtensionPointIdentifier"] as? String == "com.apple.broadcast-services-upload"
+      else { continue }
+      return bundle.bundleIdentifier
+    }
+    return nil
   }
 
   private static func findButton(in view: UIView) -> UIButton? {

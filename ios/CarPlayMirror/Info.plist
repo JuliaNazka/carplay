@@ -24,10 +24,6 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>MirrorAppGroupIdentifier</key>
-	<string>$(MIRROR_APP_GROUP_ID)</string>
-	<key>MirrorBroadcastExtensionBundleIdentifier</key>
-	<string>$(MIRROR_BUNDLE_ID).BroadcastExtension</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

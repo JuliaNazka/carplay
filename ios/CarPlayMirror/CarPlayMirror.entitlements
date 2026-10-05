@@ -4,9 +4,5 @@
 <dict>
 	<key>com.apple.developer.carplay-maps</key>
 	<true/>
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>$(MIRROR_APP_GROUP_ID)</string>
-	</array>
 </dict>
 </plist>

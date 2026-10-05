@@ -1,0 +1,102 @@
+# Compila o app num Mac do GitHub e gera um .ipa SEM assinatura, para instalar no
+# iPhone com o Sideloadly (Windows) ou ferramenta parecida, usando seu Apple ID.
+name: iOS (.ipa para Sideloadly)
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      bundle_id:
+        description: 'Bundle ID (deixe vazio para usar com.<seu-usuario-github>.carplaymirror)'
+        required: false
+        default: ''
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  js:
+    name: JavaScript (lint, tipos, testes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test -- --ci
+
+  ipa:
+    name: Build iOS (.ipa sem assinatura)
+    runs-on: macos-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Define o Bundle ID
+        env:
+          INPUT_BUNDLE_ID: ${{ inputs.bundle_id }}
+        run: |
+          if [ -n "$INPUT_BUNDLE_ID" ]; then
+            BUNDLE_ID="$INPUT_BUNDLE_ID"
+          else
+            OWNER=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-')
+            BUNDLE_ID="com.${OWNER}.carplaymirror"
+          fi
+          echo "BUNDLE_ID=$BUNDLE_ID" >> "$GITHUB_ENV"
+          echo "Bundle ID: $BUNDLE_ID"
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Instala os pods
+        working-directory: ios
+        run: bundle exec pod install
+
+      - name: Compila (Release, iphoneos, sem assinatura)
+        run: |
+          xcodebuild \
+            -workspace ios/CarPlayMirror.xcworkspace \
+            -scheme CarPlayMirror \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO \
+            MIRROR_BUNDLE_ID="$BUNDLE_ID" \
+            build
+
+      - name: Empacota o .ipa
+        run: |
+          APP=build/Build/Products/Release-iphoneos/CarPlayMirror.app
+          test -f "$APP/main.jsbundle" || { echo "main.jsbundle ausente"; exit 1; }
+          test -d "$APP/PlugIns/BroadcastExtension.appex" || { echo "extensão ausente"; exit 1; }
+          mkdir -p ipa/Payload
+          cp -R "$APP" ipa/Payload/
+          (cd ipa && zip -qry ../CarPlayMirror.ipa Payload)
+          ls -lh CarPlayMirror.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CarPlayMirror-ipa
+          path: CarPlayMirror.ipa
+          retention-days: 30

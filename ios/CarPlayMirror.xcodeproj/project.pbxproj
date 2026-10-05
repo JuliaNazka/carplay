@@ -52,7 +52,6 @@
 
 /* Begin PBXFileReference section */
 		073A479573960410F56FCFAD /* FrameEncoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FrameEncoder.swift; sourceTree = "<group>"; };
-		116C3EB323551361B25E578C /* CarPlayMirror-NoCarPlay.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; name = "CarPlayMirror-NoCarPlay.entitlements"; path = "CarPlayMirror/CarPlayMirror-NoCarPlay.entitlements"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* CarPlayMirror.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CarPlayMirror.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CarPlayMirror/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CarPlayMirror/Info.plist; sourceTree = "<group>"; };
@@ -71,7 +70,6 @@
 		8C56ABF091368E4CCC4D6A5D /* CarPlayMirror.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; name = CarPlayMirror.entitlements; path = CarPlayMirror/CarPlayMirror.entitlements; sourceTree = "<group>"; };
 		9C5D58B9B9119D6CD6144776 /* MirrorShared.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MirrorShared.swift; sourceTree = "<group>"; };
 		A5F9B58E77D2E1C8FD948471 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CarPlaySceneDelegate.swift; path = CarPlayMirror/CarPlay/CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
-		A9BA5B6AF2B88DB2EAEF58C0 /* BroadcastExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = BroadcastExtension.entitlements; sourceTree = "<group>"; };
 		AF3BE6C9ABE8F3335B91DF6B /* BroadcastExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BroadcastExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4721644B3F51A1BF17746DA /* SampleHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
 		C9783D470D4D91AFB6117237 /* RCTScreenMirror.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = RCTScreenMirror.mm; path = CarPlayMirror/NativeModules/RCTScreenMirror.mm; sourceTree = "<group>"; };
@@ -109,7 +107,6 @@
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				6A475BC990D815A31ADBF409 /* PhoneSceneDelegate.swift */,
 				8C56ABF091368E4CCC4D6A5D /* CarPlayMirror.entitlements */,
-				116C3EB323551361B25E578C /* CarPlayMirror-NoCarPlay.entitlements */,
 				88BE0EB2C909FA5A483D611B /* CarPlay */,
 				BB91CAC9ECC56F1CCAEF3C31 /* Mirror */,
 				79136A06AA141C2367385677 /* NativeModules */,
@@ -133,7 +130,6 @@
 				073A479573960410F56FCFAD /* FrameEncoder.swift */,
 				E620DF3B9AD91193A0BDEC58 /* FrameSender.swift */,
 				5C88BAC3E5678B85D8CD27AC /* Info.plist */,
-				A9BA5B6AF2B88DB2EAEF58C0 /* BroadcastExtension.entitlements */,
 				62171CA74F970AF9AF274C2E /* PrivacyInfo.xcprivacy */,
 			);
 			name = BroadcastExtension;
@@ -634,7 +630,6 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = BroadcastExtension/BroadcastExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -661,7 +656,6 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = BroadcastExtension/BroadcastExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;

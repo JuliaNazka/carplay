@@ -138,7 +138,7 @@ test('envia as configurações escolhidas para o módulo nativo', async () => {
 test('mostra o erro de configuração vindo do app nativo', async () => {
   const renderer = await render({
     ...baseStatus,
-    error: 'App Group indisponível.',
+    error: 'Não foi possível usar a porta 47210.',
   });
-  expect(textContent(renderer)).toContain('App Group indisponível.');
+  expect(textContent(renderer)).toContain('Não foi possível usar a porta 47210.');
 });

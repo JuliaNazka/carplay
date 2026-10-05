@@ -19,34 +19,23 @@ final class SampleHandler: RPBroadcastSampleHandler {
   private let stateLock = NSLock()
   private var pendingFrame: PendingFrame?
   private var flushQueued = false
-  private var settings = MirrorSettings.load()
+  private var settings = MirrorSettings.standard // atualizado pelo app logo após conectar
 
   // Acessados somente em `captureQueue`.
   private var lastEncodedFrame: EncodedFrame?
   private var lastSendTime: TimeInterval = 0
   private var delayedFlushScheduled = false
 
-  private var stopObserver: DarwinNotificationObserver?
-  private var settingsObserver: DarwinNotificationObserver?
-
   override func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
-    guard MirrorShared.socketPath != nil else {
-      finishBroadcastWithError(MirrorShared.error(
-        "App Group não configurado. Confira MIRROR_APP_GROUP_ID em ios/Config.xcconfig."
-      ))
-      return
+    sender.onSettings = { [weak self] settings in
+      guard let self else { return }
+      self.stateLock.lock()
+      self.settings = settings
+      self.stateLock.unlock()
     }
-
-    stopObserver = DarwinNotificationObserver(name: MirrorShared.Notifications.stopBroadcast) { [weak self] in
+    sender.onStop = { [weak self] in
       self?.finishBroadcastWithError(MirrorShared.error("Espelhamento encerrado pelo CarPlay Mirror."))
     }
-    settingsObserver = DarwinNotificationObserver(name: MirrorShared.Notifications.settingsChanged) { [weak self] in
-      guard let self else { return }
-      self.reloadSettings()
-      // A gravação no UserDefaults pode chegar depois da notificação: relê mais uma vez.
-      self.captureQueue.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.reloadSettings() }
-    }
-
     sender.onConnected = { [weak self] in
       guard let self else { return }
       self.captureQueue.async { self.senderDidConnect() }
@@ -59,20 +48,7 @@ final class SampleHandler: RPBroadcastSampleHandler {
   }
 
   override func broadcastFinished() {
-    // As notificações Darwin chegam na main thread: remove os observadores nela
-    // para não destruí-los no meio de um callback.
-    DispatchQueue.main.async {
-      self.stopObserver = nil
-      self.settingsObserver = nil
-    }
     sender.stop()
-  }
-
-  private func reloadSettings() {
-    let updated = MirrorSettings.load()
-    stateLock.lock()
-    settings = updated
-    stateLock.unlock()
   }
 
   override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {

@@ -27,7 +27,7 @@ Isso tem consequências que você precisa conhecer:
         │  ReplayKit (quadros da tela inteira)
         ▼
  BroadcastExtension  ── reduz + rotaciona + JPEG (Core Image/GPU)
-        │  socket Unix no contêiner do App Group
+        │  TCP local (127.0.0.1), com handshake pelo token da instalação
         ▼
  App CarPlayMirror   ── decodifica o quadro mais recente
         │                           ▲
@@ -38,6 +38,7 @@ Isso tem consequências que você precisa conhecer:
 - A extensão limita o FPS sem perder a última mudança da tela: se um quadro chega antes do intervalo, ele é enviado assim que o intervalo termina.
 - Só o quadro mais recente é processado em cada etapa (nada se acumula em fila), o que mantém a latência baixa.
 - Se o app for reiniciado, a extensão reconecta sozinha e reenvia o último quadro.
+- A conexão é só local e não precisa de App Group, então o app funciona até instalado com Apple ID gratuito. Antes de enviar qualquer imagem, a extensão confere um token derivado da pasta onde o iOS instalou o app; outro app não tem como conhecê-lo e, portanto, não recebe a sua tela.
 - No CarPlay, um `CPMapTemplate` mostra os botões **Preencher/Ajustar** e **Parar**, que se escondem sozinhos depois de alguns segundos.
 
 ## Estrutura
@@ -52,24 +53,45 @@ src/
   native/presets.ts             # Presets de FPS e qualidade
   components/                   # Componentes visuais
 ios/
-  Config.xcconfig               # ← Bundle ID, Team, App Group e entitlement do CarPlay
+  Config.xcconfig               # ← Bundle ID, Team e entitlement do CarPlay
   Shared/MirrorShared.swift     # Código comum ao app e à extensão (protocolo, configurações)
   BroadcastExtension/           # Extensão ReplayKit (captura + JPEG + envio)
   CarPlayMirror/
     AppDelegate.swift           # Inicializa o React Native e o receptor de quadros
     PhoneSceneDelegate.swift    # Janela do iPhone (React Native)
     CarPlay/                    # Cena do CarPlay e view que desenha a tela espelhada
-    Mirror/                     # Receptor (socket), decodificação, estado, modo demonstração
+    Mirror/                     # Receptor (TCP local), decodificação, estado, modo demonstração
     NativeModules/RCTScreenMirror.mm  # TurboModule "ScreenMirror"
+.github/workflows/ios-ipa.yml   # Compila num Mac do GitHub e gera o .ipa
 ```
 
-## Requisitos
+## Instalar no iPhone sem Mac (Windows + Sideloadly)
+
+Você não precisa de Mac: o GitHub compila o app num Mac na nuvem (grátis em repositório público) e você instala o `.ipa` pelo Windows com o seu Apple ID, mesmo gratuito.
+
+1. **Baixe o .ipa.** No GitHub, abra a aba **Actions** → **iOS (.ipa para Sideloadly)** → a execução mais recente com ✅ → em **Artifacts**, baixe **CarPlayMirror-ipa** e extraia o `CarPlayMirror.ipa` do zip.
+   - O Bundle ID padrão é `com.<seu-usuario-github>.carplaymirror`. Para usar outro, clique em **Run workflow** e preencha `bundle_id`.
+2. **Prepare o Windows.** Instale o **iTunes** e o **iCloud** baixados do site da Apple (as versões da Microsoft Store não servem para o Sideloadly) e depois o **Sideloadly** (<https://sideloadly.io>).
+3. **Conecte o iPhone** pelo cabo, desbloqueie e toque em **Confiar** neste computador.
+4. **Instale.** Abra o Sideloadly, arraste o `CarPlayMirror.ipa`, escolha o iPhone, digite o seu Apple ID e clique em **Start** (confirme o código de dois fatores se pedir).
+5. **Libere o app no iPhone:**
+   - *Ajustes → Geral → VPN e Gerenciamento de Dispositivo* → seu Apple ID → **Confiar**.
+   - *Ajustes → Privacidade e Segurança → Modo de Desenvolvedor* → ativar (o iPhone reinicia).
+6. **Renove a cada 7 dias.** Com Apple ID gratuito o app expira em 7 dias; repita o passo 4 (o Sideloadly também pode renovar sozinho pelo Wi-Fi com o PC ligado).
+
+O Sideloadly é uma ferramenta de terceiros e pede o seu Apple ID para assinar o app; se preferir, use um Apple ID secundário.
+
+**O que funciona assim:** o app abre, a transmissão da tela liga e você vê FPS/resolução no app. **O que não funciona:** o app não aparece no CarPlay, porque o entitlement de CarPlay só vem com a aprovação da Apple numa conta paga (veja a tabela no início).
+
+## Compilar no Mac (Xcode)
+
+### Requisitos
 
 - Mac com **Xcode 16 ou superior** (o iPhone 16 Pro roda iOS 18+).
 - **Node.js 22.11+** e **Ruby/Bundler** (para o CocoaPods).
-- Conta paga do **Apple Developer Program**: App Groups e o entitlement do CarPlay não funcionam com conta gratuita.
+- Apple ID (gratuito basta para instalar no seu iPhone). O entitlement do CarPlay exige conta paga do **Apple Developer Program** e aprovação da Apple.
 
-## Configuração
+### Configuração
 
 1. Instale as dependências JavaScript:
 
@@ -87,7 +109,7 @@ ios/
    MIRROR_CARPLAY_ENTITLEMENT = 0
    ```
 
-   O App Group (`group.<bundle id>`) e o bundle da extensão (`<bundle id>.BroadcastExtension`) são derivados automaticamente. Não altere o Bundle ID pela interface do Xcode, senão o app e a extensão ficam dessincronizados.
+   O bundle da extensão (`<bundle id>.BroadcastExtension`) é derivado automaticamente. Não altere o Bundle ID pela interface do Xcode, senão o app e a extensão ficam dessincronizados.
 
 3. Instale os pods (isso também roda o codegen do TurboModule):
 
@@ -98,9 +120,9 @@ ios/
    cd ..
    ```
 
-4. Abra **`ios/CarPlayMirror.xcworkspace`** no Xcode. Em *Signing & Capabilities*, confira se os dois targets (**CarPlayMirror** e **BroadcastExtension**) estão com a capability **App Groups** marcando o mesmo grupo. Com assinatura automática, o Xcode registra os App IDs e o grupo para você.
+4. Abra **`ios/CarPlayMirror.xcworkspace`** no Xcode. Com assinatura automática, o Xcode registra os App IDs do app e da extensão para você.
 
-## Testar no Simulador (CarPlay incluso)
+### Testar no Simulador (CarPlay incluso)
 
 ```sh
 npm run ios
@@ -108,7 +130,7 @@ npm run ios
 
 No Simulador, abra **I/O → External Displays → CarPlay**. O ícone do CarPlay Mirror aparece na tela do CarPlay. A transmissão do ReplayKit não funciona no Simulador, então ative **Modo demonstração** no app: o CarPlay passa a mostrar a própria tela do app, o que valida todo o caminho de exibição.
 
-## Rodar no iPhone 16 Pro
+### Rodar no iPhone 16 Pro
 
 1. Conecte o iPhone, selecione-o no Xcode e rode o scheme **CarPlayMirror**. Para usar sem o Metro (no carro), rode em **Release**: *Product → Scheme → Edit Scheme → Run → Build Configuration → Release*, ou:
 
@@ -145,9 +167,10 @@ Dica: a tela do iPhone em pé fica estreita numa tela de carro horizontal. Víde
 
 | Sintoma | O que verificar |
 | --- | --- |
-| Aviso "App Group indisponível" | `MIRROR_APP_GROUP_ID` em `Config.xcconfig` e a capability App Groups nos **dois** targets. |
+| Aviso "Não foi possível usar a porta 47210" | Outro app está usando a porta local. Feche o CarPlay Mirror pelo seletor de apps e abra de novo, ou reinicie o iPhone. |
+| O Sideloadly falha com "App ID not available" | O Bundle ID já existe em outra conta: rode o workflow com outro `bundle_id`. |
 | App não aparece no CarPlay | Entitlement aprovado + `MIRROR_CARPLAY_ENTITLEMENT = 1`; no Simulador, confira se o build é para o Simulador. |
-| A transmissão inicia e para logo em seguida | A extensão tem limite de ~50 MB de memória: use a qualidade *Economia*. Veja os logs da extensão no app Console do Mac. |
+| A transmissão inicia e para logo em seguida | A extensão tem limite de ~50 MB de memória: use a qualidade *Economia*. |
 | CarPlay mostra "Aguardando o iPhone" | O app precisa estar aberto no CarPlay **e** a transmissão ativa. Ao trocar de app no CarPlay, o iOS pode suspender o CarPlay Mirror; volte para ele. |
 | Tela preta num app específico | Conteúdo protegido por DRM não é capturado pelo iOS. |
 
