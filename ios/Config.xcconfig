@@ -1,0 +1,25 @@
+// =============================================================================
+// CarPlay Mirror — configuração do projeto (vale para o app e para a extensão).
+// Edite AQUI em vez de mudar Bundle ID/Team pela interface do Xcode.
+// =============================================================================
+
+// Seu Team ID da Apple Developer (Xcode > Settings > Accounts), ex.: ABCDE12345.
+DEVELOPMENT_TEAM =
+
+// Bundle ID do app. A extensão usa automaticamente "<bundle>.BroadcastExtension".
+MIRROR_BUNDLE_ID = com.example.carplaymirror
+
+// App Group compartilhado entre o app e a extensão (registre-o no seu App ID).
+MIRROR_APP_GROUP_ID = group.$(MIRROR_BUNDLE_ID)
+
+// Entitlement de CarPlay em builds para o iPhone (aparelho físico):
+//   1 = seu App ID já tem o "CarPlay Navigation" (com.apple.developer.carplay-maps)
+//       aprovado pela Apple -> o app aparece no CarPlay do carro.
+//   0 = ainda não tem -> o app instala e transmite, mas não aparece no carro.
+// No Simulador o entitlement é sempre incluído, então o CarPlay funciona para testes.
+MIRROR_CARPLAY_ENTITLEMENT = 0
+
+MIRROR_APP_ENTITLEMENTS_0 = CarPlayMirror/CarPlayMirror-NoCarPlay.entitlements
+MIRROR_APP_ENTITLEMENTS_1 = CarPlayMirror/CarPlayMirror.entitlements
+MIRROR_APP_ENTITLEMENTS = CarPlayMirror/CarPlayMirror.entitlements
+MIRROR_APP_ENTITLEMENTS[sdk=iphoneos*] = $(MIRROR_APP_ENTITLEMENTS_$(MIRROR_CARPLAY_ENTITLEMENT))
