@@ -79,7 +79,7 @@ object MirrorEngine {
     val manager = context.getSystemService(MediaProjectionManager::class.java)
     val newProjection =
       try {
-        manager.getMediaProjection(resultCode, data)
+        manager?.getMediaProjection(resultCode, data)
       } catch (e: Exception) {
         Log.e(TAG, "getMediaProjection falhou", e)
         null

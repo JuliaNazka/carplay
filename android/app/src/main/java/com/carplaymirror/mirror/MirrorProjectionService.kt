@@ -55,11 +55,10 @@ class MirrorProjectionService : Service() {
   }
 
   private fun startInForeground() {
-    val manager = getSystemService(NotificationManager::class.java)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val channel =
         NotificationChannel(CHANNEL_ID, getString(R.string.mirror_channel_name), NotificationManager.IMPORTANCE_LOW)
-      manager.createNotificationChannel(channel)
+      getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
     }
 
     val stopIntent =

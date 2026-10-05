@@ -60,7 +60,7 @@ class ScreenMirrorModule(reactContext: ReactApplicationContext) :
   override fun showBroadcastPicker() {
     mainHandler.post {
       val activity = reactApplicationContext.currentActivity ?: return@post
-      val manager = activity.getSystemService(MediaProjectionManager::class.java)
+      val manager = activity.getSystemService(MediaProjectionManager::class.java) ?: return@post
       val intent =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
           // Tela inteira (e não um app só): é o celular todo que vai para o carro.
