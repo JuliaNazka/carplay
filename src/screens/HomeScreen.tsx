@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -35,14 +36,37 @@ const FILL_OPTIONS: { value: FillMode; label: string }[] = [
   { value: 'fill', label: 'Preencher' },
 ];
 
-const STEPS = [
-  'Conecte o iPhone ao carro e abra o CarPlay Mirror na tela do CarPlay.',
-  'Toque em “Iniciar espelhamento” e depois em “Iniciar Transmissão”.',
-  'Use o iPhone normalmente: a tela aparece no carro em tempo real.',
-];
+const COPY = {
+  ios: {
+    car: 'CarPlay',
+    subtitle: 'Espelhe a tela do seu iPhone direto no CarPlay.',
+    steps: [
+      'Conecte o iPhone ao carro e abra o CarPlay Mirror na tela do CarPlay.',
+      'Toque em “Iniciar espelhamento” e depois em “Iniciar Transmissão”.',
+      'Use o iPhone normalmente: a tela aparece no carro em tempo real.',
+    ],
+    footnote:
+      'Por segurança, use o espelhamento apenas com o carro parado. Conteúdo protegido por DRM (Netflix, Prime Video etc.) aparece preto, e o toque na tela do carro não controla o iPhone.',
+  },
+  android: {
+    car: 'Android Auto',
+    subtitle: 'Espelhe a tela do seu celular direto no Android Auto.',
+    steps: [
+      'Conecte o celular ao carro e abra o Car Mirror na tela do Android Auto.',
+      'Toque em “Iniciar espelhamento” e confirme para compartilhar a tela inteira.',
+      'Use o celular normalmente: a tela aparece no carro em tempo real.',
+    ],
+    footnote:
+      'Por segurança, use o espelhamento apenas com o carro parado. Conteúdo protegido por DRM (Netflix, Prime Video etc.) aparece preto, e o toque na tela do carro não controla o celular.',
+  },
+};
 
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
+  // No Android a imagem vai direto da GPU para o carro: FPS, qualidade, ajuste e modo
+  // demonstração só existem no iOS.
+  const isAndroid = Platform.OS === 'android';
+  const copy = isAndroid ? COPY.android : COPY.ios;
   const { status, refresh } = useMirrorStatus();
   const [settings, setSettings] = useState<MirrorSettings | null>(null);
 
@@ -86,15 +110,13 @@ export function HomeScreen() {
       ]}
     >
       <Text style={styles.title}>CarPlay Mirror</Text>
-      <Text style={styles.subtitle}>
-        Espelhe a tela do seu iPhone direto no CarPlay.
-      </Text>
+      <Text style={styles.subtitle}>{copy.subtitle}</Text>
 
       {!isMirrorAvailable && (
         <View style={[styles.banner, styles.bannerWarning]}>
           <Text style={styles.bannerText}>
-            Módulo nativo indisponível. Rode o app no iPhone ou no Simulador do
-            iOS com “npm run ios”.
+            Módulo nativo indisponível. Rode o app no celular com “npm run ios”
+            ou “npm run android”.
           </Text>
         </View>
       )}
@@ -107,7 +129,7 @@ export function HomeScreen() {
 
       <View style={styles.row}>
         <StatusPill
-          label="CarPlay"
+          label={copy.car}
           value={carPlayConnected ? 'Conectado' : 'Desconectado'}
           active={carPlayConnected}
         />
@@ -119,19 +141,23 @@ export function HomeScreen() {
       </View>
 
       <View style={[styles.card, styles.stats]}>
-        <Stat label="FPS" value={status ? String(status.fps) : '–'} />
+        {!isAndroid && (
+          <Stat label="FPS" value={status ? String(status.fps) : '–'} />
+        )}
         <Stat
-          label="Resolução"
+          label={isAndroid ? 'Resolução no carro' : 'Resolução'}
           value={
             hasFrame && status
               ? `${status.frameWidth}×${status.frameHeight}`
               : '–'
           }
         />
-        <Stat
-          label="Quadros"
-          value={status ? String(status.framesReceived) : '–'}
-        />
+        {!isAndroid && (
+          <Stat
+            label="Quadros"
+            value={status ? String(status.framesReceived) : '–'}
+          />
+        )}
       </View>
 
       <Pressable
@@ -150,62 +176,67 @@ export function HomeScreen() {
         </Text>
       </Pressable>
 
-      <Text style={styles.sectionTitle}>Configurações</Text>
-      <View style={styles.card}>
-        <Text style={styles.label}>Quadros por segundo</Text>
-        <SegmentedControl
-          disabled={!settings}
-          options={FPS_OPTIONS.map(fps => ({ value: fps, label: `${fps}` }))}
-          value={closestFps(settings?.maxFps ?? 30)}
-          onChange={maxFps => updateSettings({ maxFps })}
-        />
+      {!isAndroid && <Text style={styles.sectionTitle}>Configurações</Text>}
+      {!isAndroid && (
+        <View style={styles.card}>
+          <Text style={styles.label}>Quadros por segundo</Text>
+          <SegmentedControl
+            disabled={!settings}
+            options={FPS_OPTIONS.map(fps => ({ value: fps, label: `${fps}` }))}
+            value={closestFps(settings?.maxFps ?? 30)}
+            onChange={maxFps => updateSettings({ maxFps })}
+          />
 
-        <Text style={styles.label}>Qualidade da imagem</Text>
-        <SegmentedControl
-          disabled={!settings}
-          options={QUALITY_PRESETS.map(p => ({ value: p.id, label: p.label }))}
-          value={presetForDimension(settings?.maxDimension ?? 1280).id}
-          onChange={id => {
-            const preset = QUALITY_PRESETS.find(p => p.id === id);
-            if (preset) {
-              updateSettings({
-                jpegQuality: preset.jpegQuality,
-                maxDimension: preset.maxDimension,
-              });
-            }
-          }}
-        />
-
-        <Text style={styles.label}>Na tela do carro</Text>
-        <SegmentedControl
-          disabled={!settings}
-          options={FILL_OPTIONS}
-          value={settings?.fillMode ?? 'fit'}
-          onChange={fillMode => updateSettings({ fillMode })}
-        />
-
-        <View style={styles.switchRow}>
-          <View style={styles.switchText}>
-            <Text style={styles.switchTitle}>Modo demonstração</Text>
-            <Text style={styles.hint}>
-              Mostra este app no CarPlay sem transmitir a tela. Útil para testar
-              no Simulador do Xcode.
-            </Text>
-          </View>
-          <Switch
-            disabled={!isMirrorAvailable}
-            value={demoMode}
-            onValueChange={enabled => {
-              setDemoMode(enabled);
-              refresh();
+          <Text style={styles.label}>Qualidade da imagem</Text>
+          <SegmentedControl
+            disabled={!settings}
+            options={QUALITY_PRESETS.map(p => ({
+              value: p.id,
+              label: p.label,
+            }))}
+            value={presetForDimension(settings?.maxDimension ?? 1280).id}
+            onChange={id => {
+              const preset = QUALITY_PRESETS.find(p => p.id === id);
+              if (preset) {
+                updateSettings({
+                  jpegQuality: preset.jpegQuality,
+                  maxDimension: preset.maxDimension,
+                });
+              }
             }}
           />
+
+          <Text style={styles.label}>Na tela do carro</Text>
+          <SegmentedControl
+            disabled={!settings}
+            options={FILL_OPTIONS}
+            value={settings?.fillMode ?? 'fit'}
+            onChange={fillMode => updateSettings({ fillMode })}
+          />
+
+          <View style={styles.switchRow}>
+            <View style={styles.switchText}>
+              <Text style={styles.switchTitle}>Modo demonstração</Text>
+              <Text style={styles.hint}>
+                Mostra este app no CarPlay sem transmitir a tela. Útil para
+                testar no Simulador do Xcode.
+              </Text>
+            </View>
+            <Switch
+              disabled={!isMirrorAvailable}
+              value={demoMode}
+              onValueChange={enabled => {
+                setDemoMode(enabled);
+                refresh();
+              }}
+            />
+          </View>
         </View>
-      </View>
+      )}
 
       <Text style={styles.sectionTitle}>Como usar</Text>
       <View style={styles.card}>
-        {STEPS.map((step, index) => (
+        {copy.steps.map((step, index) => (
           <View key={step} style={styles.step}>
             <Text style={styles.stepNumber}>{index + 1}</Text>
             <Text style={styles.stepText}>{step}</Text>
@@ -213,11 +244,7 @@ export function HomeScreen() {
         ))}
       </View>
 
-      <Text style={styles.footnote}>
-        Por segurança, use o espelhamento apenas com o carro parado. Conteúdo
-        protegido por DRM (Netflix, Prime Video etc.) aparece preto, e o toque
-        na tela do carro não controla o iPhone.
-      </Text>
+      <Text style={styles.footnote}>{copy.footnote}</Text>
     </ScrollView>
   );
 }

@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Text } from 'react-native';
+import { Platform, Text } from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 
 import type { MirrorStatus } from '../specs/NativeScreenMirror';
@@ -56,7 +56,10 @@ function textContent(renderer: ReactTestRenderer.ReactTestRenderer) {
     .map(node => [node.props.children].flat().join(''));
 }
 
-function pressText(renderer: ReactTestRenderer.ReactTestRenderer, label: string) {
+function pressText(
+  renderer: ReactTestRenderer.ReactTestRenderer,
+  label: string,
+) {
   const text = renderer.root
     .findAllByType(Text)
     .find(node => node.props.children === label);
@@ -140,5 +143,37 @@ test('mostra o erro de configuração vindo do app nativo', async () => {
     ...baseStatus,
     error: 'Não foi possível usar a porta 47210.',
   });
-  expect(textContent(renderer)).toContain('Não foi possível usar a porta 47210.');
+  expect(textContent(renderer)).toContain(
+    'Não foi possível usar a porta 47210.',
+  );
+});
+
+test('no Android mostra Android Auto e esconde as opções exclusivas do iOS', async () => {
+  const originalOS = Platform.OS;
+  Platform.OS = 'android';
+  try {
+    const renderer = await render({
+      ...baseStatus,
+      broadcasting: true,
+      frameWidth: 1920,
+      frameHeight: 720,
+    });
+    const texts = textContent(renderer);
+    expect(texts).toEqual(
+      expect.arrayContaining([
+        'Android Auto',
+        'Resolução no carro',
+        '1920×720',
+      ]),
+    );
+    expect(texts).not.toContain('Configurações');
+    expect(texts).not.toContain('FPS');
+
+    await ReactTestRenderer.act(async () => {
+      pressText(renderer, 'Parar espelhamento');
+    });
+    expect(mockModule.stopBroadcast).toHaveBeenCalledTimes(1);
+  } finally {
+    Platform.OS = originalOS;
+  }
 });

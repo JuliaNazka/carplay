@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Car Mirror</string>
+
+    <string name="mirror_channel_name">Espelhamento de tela</string>
+    <string name="mirror_notification_title">Espelhando a tela no Android Auto</string>
+    <string name="mirror_notification_text">A tela do celular está aparecendo no carro.</string>
+    <string name="mirror_notification_stop">Parar</string>
+
+    <string name="auto_waiting_title">Aguardando o celular</string>
+    <string name="auto_waiting_text">No celular, abra o Car Mirror e toque em “Iniciar espelhamento”.</string>
+    <string name="auto_help">Como usar</string>
+    <string name="auto_stop">Parar</string>
+</resources>

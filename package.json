@@ -7,7 +7,8 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "android": "react-native run-android"
   },
   "dependencies": {
     "react": "19.2.3",
@@ -46,6 +47,9 @@
       "modulesProvider": {
         "ScreenMirror": "RCTScreenMirror"
       }
+    },
+    "android": {
+      "javaPackageName": "com.carplaymirror"
     }
   }
 }

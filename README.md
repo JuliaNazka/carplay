@@ -1,6 +1,43 @@
 # CarPlay Mirror
 
-App em **React Native** para iPhone (pensado para o **iPhone 16 Pro**) que espelha a tela do celular direto na tela do **CarPlay**. Você abre o CarPlay Mirror no carro, toca em **Iniciar espelhamento** no iPhone, e o que estiver na tela do iPhone (qualquer app) aparece no painel em tempo real.
+App em **React Native** que espelha a tela do celular direto no painel do carro, em tempo real:
+
+- **iPhone → CarPlay** (pensado para o iPhone 16 Pro).
+- **Android → Android Auto** (versão B, pensada para o **Galaxy S24 Ultra**). Funciona **sem pagar nada**: veja [Versão Android](#versão-android-android-auto).
+
+Você abre o app na tela do carro, toca em **Iniciar espelhamento** no celular, e o que estiver na tela do celular (qualquer app) aparece no painel.
+
+## Versão Android (Android Auto)
+
+No Android não é preciso conta paga nem aprovação: o Android Auto aceita apps instalados fora da Play Store quando você liga uma opção de desenvolvedor.
+
+**Como funciona:** a tela é capturada com a API oficial de captura de tela do Android (MediaProjection) e espelhada direto na superfície que o Android Auto entrega a apps de navegação. A GPU desenha a imagem na tela do carro, sem compressão, então a qualidade e a fluidez são as da tela do celular.
+
+### Instalar no Galaxy S24 Ultra
+
+1. **Baixe o APK.** No GitHub, abra **Actions** → **Android (.apk)** → a execução mais recente com ✅ → em **Artifacts**, baixe **CarMirror-apk** e extraia o `CarMirror.apk` (dá para fazer tudo pelo navegador do próprio celular).
+2. **Instale.** Abra o `CarMirror.apk` no celular. Se o Android pedir, permita **Instalar apps desconhecidos** para o navegador ou o app Arquivos e confirme. Se o Play Protect avisar, toque em **Instalar mesmo assim**.
+3. **Libere apps de fora da Play Store no Android Auto** (uma vez só):
+   - Abra *Configurações → Dispositivos conectados → Android Auto*.
+   - Role até o fim e toque **10 vezes** em **Versão** até aparecer a mensagem de modo de desenvolvedor.
+   - No menu **⋮** (canto superior direito), entre em **Configurações do desenvolvedor** e marque **Fontes desconhecidas** (*Unknown sources*).
+4. **Mostre o app no carro:** em *Android Auto → Personalizar inicializador*, confira se o **Car Mirror** está marcado.
+
+### Usar
+
+1. Conecte o celular ao carro (cabo ou sem fio) e abra o **Car Mirror** na tela do Android Auto. Ele mostra "Aguardando o celular".
+2. No celular, abra o Car Mirror, toque em **Iniciar espelhamento** e confirme. Se o sistema perguntar, escolha compartilhar a **tela inteira**.
+3. Use o celular normalmente: a tela aparece no carro. Para parar, toque em **Parar** no carro, em **Parar espelhamento** no app ou em **Parar** na notificação.
+
+Sem carro por perto, dá para testar no computador com o **Desktop Head Unit (DHU)**, o emulador oficial de Android Auto do Android Studio.
+
+### Limitações no Android
+
+- O toque na tela do carro não controla o celular.
+- Conteúdo protegido por DRM (Netflix, Prime Video etc.) aparece preto.
+- A imagem do celular em pé fica estreita numa tela de carro horizontal; vídeos e apps em paisagem ocupam a tela toda.
+- O Android pode encerrar a captura quando a tela do celular bloqueia; é só iniciar de novo.
+- Use apenas com o carro parado.
 
 ## Antes de começar: o que o iOS permite
 
@@ -62,7 +99,11 @@ ios/
     CarPlay/                    # Cena do CarPlay e view que desenha a tela espelhada
     Mirror/                     # Receptor (TCP local), decodificação, estado, modo demonstração
     NativeModules/RCTScreenMirror.mm  # TurboModule "ScreenMirror"
+android/app/src/main/java/com/carplaymirror/
+  mirror/                       # Captura (MediaProjection), serviço e módulo "ScreenMirror"
+  auto/                         # Android Auto: CarAppService, sessão e tela (NavigationTemplate)
 .github/workflows/ios-ipa.yml   # Compila num Mac do GitHub e gera o .ipa
+.github/workflows/android-apk.yml  # Compila o .apk do Android
 ```
 
 ## Instalar no iPhone sem Mac (Windows + Sideloadly)
@@ -179,6 +220,7 @@ Dica: a tela do iPhone em pé fica estreita numa tela de carro horizontal. Víde
 ```sh
 npm start          # Metro (modo desenvolvimento)
 npm run ios        # compila e abre no Simulador/iPhone
+npm run android    # compila e instala no Android conectado
 npm test           # testes (Jest)
 npm run lint       # ESLint + Prettier
 npm run typecheck  # TypeScript
