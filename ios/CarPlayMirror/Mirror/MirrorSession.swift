@@ -10,7 +10,8 @@ protocol MirrorRenderer: AnyObject {
 
 /// Estado central do espelhamento. Use somente na main thread
 /// (exceto pelos callbacks internos de rede/decodificação).
-/// É `public` para aparecer em CarPlayMirror-Swift.h e ser usado pelo módulo nativo (RCTScreenMirror.mm).
+/// Exposta ao Objective-C com o nome fixo `MirrorSession`: o módulo nativo (RCTScreenMirror.mm)
+/// a encontra em tempo de execução. Mantenha os nomes em @objc(...) em sincronia com o .mm.
 @objc(MirrorSession)
 public final class MirrorSession: NSObject {
   @objc public static let shared = MirrorSession()

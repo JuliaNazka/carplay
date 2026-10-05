@@ -2,11 +2,29 @@
 // A especificação fica em specs/NativeScreenMirror.ts; o codegen gera o protocolo
 // NativeScreenMirrorSpec durante o `pod install`.
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 #import <AppSpecs/AppSpecs.h>
 
-#import "CarPlayMirror-Swift.h"
+// Métodos de MirrorSession (Swift, @objc(MirrorSession)). Declarados aqui em vez de importar
+// CarPlayMirror-Swift.h, que também expõe classes que dependem dos headers do CarPlay e do React.
+@protocol CPMMirrorSession <NSObject>
++ (id<CPMMirrorSession>)shared;
+- (NSDictionary<NSString *, id> *)statusDictionary;
+- (void)showBroadcastPicker;
+- (void)stopBroadcast;
+- (void)updateSettingsWithMaxFPS:(NSInteger)maxFPS
+                     jpegQuality:(double)jpegQuality
+                    maxDimension:(NSInteger)maxDimension
+                        fillMode:(NSString *)fillMode;
+- (void)setDemoModeEnabled:(BOOL)enabled;
+@end
+
+static id<CPMMirrorSession> MirrorSessionShared(void)
+{
+  Class<CPMMirrorSession> sessionClass = (Class<CPMMirrorSession>)NSClassFromString(@"MirrorSession");
+  return [sessionClass shared];
+}
 
 @interface RCTScreenMirror : NSObject <NativeScreenMirrorSpec>
 @end
@@ -27,21 +45,21 @@
 - (void)getStatus:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
   dispatch_async(dispatch_get_main_queue(), ^{
-    resolve([MirrorSession.shared statusDictionary]);
+    resolve([MirrorSessionShared() statusDictionary]);
   });
 }
 
 - (void)showBroadcastPicker
 {
   dispatch_async(dispatch_get_main_queue(), ^{
-    [MirrorSession.shared showBroadcastPicker];
+    [MirrorSessionShared() showBroadcastPicker];
   });
 }
 
 - (void)stopBroadcast
 {
   dispatch_async(dispatch_get_main_queue(), ^{
-    [MirrorSession.shared stopBroadcast];
+    [MirrorSessionShared() stopBroadcast];
   });
 }
 
@@ -54,7 +72,7 @@
     return;
   }
   dispatch_async(dispatch_get_main_queue(), ^{
-    [MirrorSession.shared updateSettingsWithMaxFPS:(NSInteger)maxFps
+    [MirrorSessionShared() updateSettingsWithMaxFPS:(NSInteger)maxFps
                                        jpegQuality:jpegQuality
                                       maxDimension:(NSInteger)maxDimension
                                           fillMode:fillMode];
@@ -64,7 +82,7 @@
 - (void)setDemoMode:(BOOL)enabled
 {
   dispatch_async(dispatch_get_main_queue(), ^{
-    [MirrorSession.shared setDemoModeEnabled:enabled];
+    [MirrorSessionShared() setDemoModeEnabled:enabled];
   });
 }
 
