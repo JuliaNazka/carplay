@@ -41,6 +41,8 @@ public final class MirrorSession: NSObject {
   private let decodeLock = NSLock()
   private var pendingJPEG: Data? // protegido por decodeLock
   private var decodeScheduled = false // protegido por decodeLock
+  private var pendingImage: CGImage? // protegido por decodeLock
+  private var presentScheduled = false // protegido por decodeLock
 
   private lazy var broadcastPicker: RPSystemBroadcastPickerView = {
     let picker = RPSystemBroadcastPickerView(frame: CGRect(x: -200, y: -200, width: 44, height: 44))
@@ -67,6 +69,10 @@ public final class MirrorSession: NSObject {
     receiver.onFrame = { [weak self] jpeg in
       self?.enqueueDecode(jpeg)
     }
+
+#if !targetEnvironment(simulator)
+    // No Simulador a extensão de transmissão não roda, e o caminho do App Group passa do
+    // limite de 104 bytes de um socket Unix; lá só o modo demonstração é usado.
     receiver.start { [weak self] error in
       DispatchQueue.main.async { self?.errorMessage = error ?? "" }
     }
@@ -80,6 +86,7 @@ public final class MirrorSession: NSObject {
         DispatchQueue.main.async { self?.errorMessage = error ?? "" }
       }
     }
+#endif
   }
 
   func carPlayDidConnect() {
@@ -167,9 +174,12 @@ public final class MirrorSession: NSObject {
     demoTimer?.invalidate()
     demoTimer = nil
     if enabled {
-      demoTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+      let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
         self?.captureDemoFrame()
       }
+      // Modo .common: continua capturando enquanto o usuário rola a tela.
+      RunLoop.main.add(timer, forMode: .common)
+      demoTimer = timer
     } else if !isBroadcasting {
       clearFrame()
     }
@@ -211,10 +221,30 @@ public final class MirrorSession: NSObject {
       decodeLock.unlock()
 
       guard let image = Self.decodeJPEG(jpeg) else { continue }
-      DispatchQueue.main.async { [weak self] in
-        guard let self, self.isBroadcasting else { return }
-        self.present(frame: image)
-      }
+      schedulePresent(image)
+    }
+  }
+
+  /// Entrega à main thread só a imagem decodificada mais recente. Se a main thread estiver
+  /// ocupada, as imagens intermediárias são descartadas em vez de se acumularem na fila.
+  private func schedulePresent(_ image: CGImage) {
+    decodeLock.lock()
+    pendingImage = image
+    let shouldSchedule = !presentScheduled
+    presentScheduled = true
+    decodeLock.unlock()
+
+    guard shouldSchedule else { return }
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      self.decodeLock.lock()
+      let image = self.pendingImage
+      self.pendingImage = nil
+      self.presentScheduled = false
+      self.decodeLock.unlock()
+
+      guard let image, self.isBroadcasting else { return }
+      self.present(frame: image)
     }
   }
 

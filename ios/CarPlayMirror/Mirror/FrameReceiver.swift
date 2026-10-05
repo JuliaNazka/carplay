@@ -126,6 +126,7 @@ final class FrameReceiver {
       if count > 0 {
         buffer.append(chunk, count: count)
       } else if count == 0 {
+        parseFrames() // entrega o que já chegou completo antes de fechar
         disconnectClient(notify: true) // a extensão encerrou
         return
       } else if errno == EINTR {

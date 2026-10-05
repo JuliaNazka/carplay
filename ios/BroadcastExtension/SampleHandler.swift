@@ -1,4 +1,5 @@
 import CoreMedia
+import ImageIO
 import ReplayKit
 
 /// Extensão de transmissão (ReplayKit). O iOS entrega aqui os quadros da tela inteira do
@@ -41,10 +42,9 @@ final class SampleHandler: RPBroadcastSampleHandler {
     }
     settingsObserver = DarwinNotificationObserver(name: MirrorShared.Notifications.settingsChanged) { [weak self] in
       guard let self else { return }
-      let updated = MirrorSettings.load()
-      self.stateLock.lock()
-      self.settings = updated
-      self.stateLock.unlock()
+      self.reloadSettings()
+      // A gravação no UserDefaults pode chegar depois da notificação: relê mais uma vez.
+      self.captureQueue.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.reloadSettings() }
     }
 
     sender.onConnected = { [weak self] in
@@ -59,9 +59,20 @@ final class SampleHandler: RPBroadcastSampleHandler {
   }
 
   override func broadcastFinished() {
-    stopObserver = nil
-    settingsObserver = nil
+    // As notificações Darwin chegam na main thread: remove os observadores nela
+    // para não destruí-los no meio de um callback.
+    DispatchQueue.main.async {
+      self.stopObserver = nil
+      self.settingsObserver = nil
+    }
     sender.stop()
+  }
+
+  private func reloadSettings() {
+    let updated = MirrorSettings.load()
+    stateLock.lock()
+    settings = updated
+    stateLock.unlock()
   }
 
   override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {

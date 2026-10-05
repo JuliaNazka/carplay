@@ -50,6 +50,9 @@
        maxDimension:(double)maxDimension
            fillMode:(NSString *)fillMode
 {
+  if (!isfinite(maxFps) || !isfinite(jpegQuality) || !isfinite(maxDimension)) {
+    return;
+  }
   dispatch_async(dispatch_get_main_queue(), ^{
     [MirrorSession.shared updateSettingsWithMaxFPS:(NSInteger)maxFps
                                        jpegQuality:jpegQuality

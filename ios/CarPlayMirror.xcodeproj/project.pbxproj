@@ -20,6 +20,7 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		ABEF41EFDB7C23A98E04BF19 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F9B58E77D2E1C8FD948471 /* CarPlaySceneDelegate.swift */; };
+		C02F5AAE5A5391ACDC0CBC2B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 62171CA74F970AF9AF274C2E /* PrivacyInfo.xcprivacy */; };
 		CA0618F67A947663BE910EAA /* PhoneSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A475BC990D815A31ADBF409 /* PhoneSceneDelegate.swift */; };
 		EFFEB2043B3160FDEDFC5006 /* FrameSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = E620DF3B9AD91193A0BDEC58 /* FrameSender.swift */; };
 		F34BB679FC952D3607566002 /* FrameReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17CA8C5B8B79C800DF4F5588 /* FrameReceiver.swift */; };
@@ -63,6 +64,7 @@
 		58FC21E83BBE8FC689CF8A95 /* MirrorSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MirrorSession.swift; path = CarPlayMirror/Mirror/MirrorSession.swift; sourceTree = "<group>"; };
 		5C88BAC3E5678B85D8CD27AC /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-CarPlayMirror.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CarPlayMirror.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		62171CA74F970AF9AF274C2E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6A475BC990D815A31ADBF409 /* PhoneSceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PhoneSceneDelegate.swift; path = CarPlayMirror/PhoneSceneDelegate.swift; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CarPlayMirror/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CarPlayMirror/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 				E620DF3B9AD91193A0BDEC58 /* FrameSender.swift */,
 				5C88BAC3E5678B85D8CD27AC /* Info.plist */,
 				A9BA5B6AF2B88DB2EAEF58C0 /* BroadcastExtension.entitlements */,
+				62171CA74F970AF9AF274C2E /* PrivacyInfo.xcprivacy */,
 			);
 			name = BroadcastExtension;
 			path = BroadcastExtension;
@@ -303,6 +306,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C02F5AAE5A5391ACDC0CBC2B /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

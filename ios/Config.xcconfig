@@ -23,3 +23,6 @@ MIRROR_APP_ENTITLEMENTS_0 = CarPlayMirror/CarPlayMirror-NoCarPlay.entitlements
 MIRROR_APP_ENTITLEMENTS_1 = CarPlayMirror/CarPlayMirror.entitlements
 MIRROR_APP_ENTITLEMENTS = CarPlayMirror/CarPlayMirror.entitlements
 MIRROR_APP_ENTITLEMENTS[sdk=iphoneos*] = $(MIRROR_APP_ENTITLEMENTS_$(MIRROR_CARPLAY_ENTITLEMENT))
+
+// Os scripts do CocoaPods/React Native precisam rodar fora do sandbox de scripts do Xcode.
+ENABLE_USER_SCRIPT_SANDBOXING = NO
