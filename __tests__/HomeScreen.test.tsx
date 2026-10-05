@@ -161,6 +161,7 @@ test('no Android mostra Android Auto e esconde as opções exclusivas do iOS', a
     const texts = textContent(renderer);
     expect(texts).toEqual(
       expect.arrayContaining([
+        'Car Mirror',
         'Android Auto',
         'Resolução no carro',
         '1920×720',

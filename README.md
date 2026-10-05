@@ -7,6 +7,8 @@ App em **React Native** que espelha a tela do celular direto no painel do carro,
 
 Você abre o app na tela do carro, toca em **Iniciar espelhamento** no celular, e o que estiver na tela do celular (qualquer app) aparece no painel.
 
+![Interface do app no Android e no iPhone](docs/interface.png)
+
 ## Versão Android (Android Auto)
 
 No Android não é preciso conta paga nem aprovação: o Android Auto aceita apps instalados fora da Play Store quando você liga uma opção de desenvolvedor.

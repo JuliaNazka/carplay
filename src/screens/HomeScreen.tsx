@@ -38,6 +38,7 @@ const FILL_OPTIONS: { value: FillMode; label: string }[] = [
 
 const COPY = {
   ios: {
+    title: 'CarPlay Mirror',
     car: 'CarPlay',
     subtitle: 'Espelhe a tela do seu iPhone direto no CarPlay.',
     steps: [
@@ -49,6 +50,7 @@ const COPY = {
       'Por segurança, use o espelhamento apenas com o carro parado. Conteúdo protegido por DRM (Netflix, Prime Video etc.) aparece preto, e o toque na tela do carro não controla o iPhone.',
   },
   android: {
+    title: 'Car Mirror',
     car: 'Android Auto',
     subtitle: 'Espelhe a tela do seu celular direto no Android Auto.',
     steps: [
@@ -109,7 +111,7 @@ export function HomeScreen() {
         { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 32 },
       ]}
     >
-      <Text style={styles.title}>CarPlay Mirror</Text>
+      <Text style={styles.title}>{copy.title}</Text>
       <Text style={styles.subtitle}>{copy.subtitle}</Text>
 
       {!isMirrorAvailable && (
