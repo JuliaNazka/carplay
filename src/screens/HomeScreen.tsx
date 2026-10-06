@@ -54,12 +54,12 @@ const COPY = {
     car: 'Android Auto',
     subtitle: 'Espelhe a tela do seu celular direto no Android Auto.',
     steps: [
-      'Conecte o celular ao carro e abra o Car Mirror na tela do Android Auto.',
+      'Com o carro parado, conecte o celular e abra o Car Mirror na tela do Android Auto.',
       'Toque em “Iniciar espelhamento” e confirme para compartilhar a tela inteira.',
       'Use o celular normalmente: a tela aparece no carro em tempo real.',
     ],
     footnote:
-      'Por segurança, use o espelhamento apenas com o carro parado. Conteúdo protegido por DRM (Netflix, Prime Video etc.) aparece preto, e o toque na tela do carro não controla o celular.',
+      'O Android Auto só abre o Car Mirror com o carro parado; quando o carro anda, a tela do carro volta para os outros apps. Conteúdo protegido por DRM (Netflix, Prime Video etc.) aparece preto, e o toque na tela do carro não controla o celular.',
   },
 };
 

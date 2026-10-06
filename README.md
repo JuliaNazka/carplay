@@ -13,7 +13,9 @@ Você abre o app na tela do carro, toca em **Iniciar espelhamento** no celular, 
 
 No Android não é preciso conta paga nem aprovação: o Android Auto aceita apps instalados fora da Play Store quando você liga uma opção de desenvolvedor.
 
-**Como funciona:** a tela é capturada com a API oficial de captura de tela do Android (MediaProjection) e espelhada direto na superfície que o Android Auto entrega a apps de navegação. A GPU desenha a imagem na tela do carro, sem compressão, então a qualidade e a fluidez são as da tela do celular.
+**Como funciona:** a tela é capturada com a API oficial de captura de tela do Android (MediaProjection) e espelhada numa tela comum do Android que o Android Auto abre no carro como **app para carro parado** (categoria `CAR_LAUNCHER`, Android 15+). A GPU desenha a imagem direto, sem compressão, então a qualidade e a fluidez são as da tela do celular.
+
+Por que não um app de navegação (Car App Library)? Segundo a [documentação do Google](https://developer.android.com/training/cars/testing), a opção "Fontes desconhecidas" não vale para apps da Car App Library: eles só aparecem num carro de verdade se instalados pela Google Play. Já os apps para carro parado aparecem com essa opção. Hoje o Android Auto só aceita **jogos** nessa categoria, por isso o app se declara como jogo (`android:appCategory="game"`).
 
 ### Instalar no Galaxy S24 Ultra
 
@@ -27,7 +29,7 @@ No Android não é preciso conta paga nem aprovação: o Android Auto aceita app
 
 ### Usar
 
-1. Conecte o celular ao carro (cabo ou sem fio) e abra o **Car Mirror** na tela do Android Auto. Ele mostra "Aguardando o celular".
+1. Com o **carro parado**, conecte o celular (cabo ou sem fio) e abra o **Car Mirror** na tela do Android Auto. Ele mostra "Aguardando o celular".
 2. No celular, abra o Car Mirror, toque em **Iniciar espelhamento** e confirme. Se o sistema perguntar, escolha compartilhar a **tela inteira**.
 3. Use o celular normalmente: a tela aparece no carro. Para parar, toque em **Parar** no carro, em **Parar espelhamento** no app ou em **Parar** na notificação.
 
@@ -39,7 +41,8 @@ Sem carro por perto, dá para testar no computador com o **Desktop Head Unit (DH
 - Conteúdo protegido por DRM (Netflix, Prime Video etc.) aparece preto.
 - A imagem do celular em pé fica estreita numa tela de carro horizontal; vídeos e apps em paisagem ocupam a tela toda.
 - O Android pode encerrar a captura quando a tela do celular bloqueia; é só iniciar de novo.
-- Use apenas com o carro parado.
+- Precisa de **Android 15 ou mais novo** (o Galaxy S24 Ultra já tem) e de um Android Auto que suporte apps para carro parado.
+- Só funciona com o carro parado: quando o carro anda, o Android Auto fecha a tela do Car Mirror.
 
 ## Antes de começar: o que o iOS permite
 
@@ -103,7 +106,7 @@ ios/
     NativeModules/RCTScreenMirror.mm  # TurboModule "ScreenMirror"
 android/app/src/main/java/com/carplaymirror/
   mirror/                       # Captura (MediaProjection), serviço e módulo "ScreenMirror"
-  auto/                         # Android Auto: CarAppService, sessão e tela (NavigationTemplate)
+  car/MirrorCarActivity.kt      # Tela do carro no Android Auto (Activity CAR_LAUNCHER)
 .github/workflows/ios-ipa.yml   # Compila num Mac do GitHub e gera o .ipa
 .github/workflows/android-apk.yml  # Compila o .apk do Android
 ```
